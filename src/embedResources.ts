@@ -12,6 +12,7 @@ export function embedResources(
   cssString: string,
   baseUrl: string | null,
   options: Object,
+  fetchOptions: RequestInit,
 ): Promise<string> {
   if (!shouldEmbed(cssString)) {
     return Promise.resolve(cssString)
@@ -21,7 +22,8 @@ export function embedResources(
     .then(parseURLs)
     .then((urls) =>
       urls.reduce(
-        (done, url) => done.then((ret) => embed(ret, url, baseUrl, options)),
+        (done, url) =>
+          done.then((ret) => embed(ret, url, baseUrl, options, fetchOptions)),
         Promise.resolve(cssString),
       ),
     )
@@ -43,12 +45,15 @@ export function embed(
   resourceURL: string,
   baseURL: string | null,
   options: Options,
+  fetchOptions: RequestInit,
   get?: (url: string) => Promise<string>,
 ): Promise<string> {
   const resolvedURL = baseURL ? resolveUrl(resourceURL, baseURL) : resourceURL
 
   return Promise.resolve(resolvedURL)
-    .then((url) => (get ? get(url) : getBlobFromURL(url, options)))
+    .then((url) =>
+      get ? get(url) : getBlobFromURL(url, options, fetchOptions),
+    )
     .then((data) => toDataURL(data!, getMimeType(resourceURL)))
     .then((dataURL) =>
       cssString.replace(urlToRegex(resourceURL), `$1${dataURL}$3`),

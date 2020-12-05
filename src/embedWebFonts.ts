@@ -18,6 +18,7 @@ export async function parseWebFontRules(
 export async function embedWebFonts(
   clonedNode: HTMLElement,
   options: Options,
+  fetchOptions: RequestInit,
 ): Promise<HTMLElement> {
   return parseWebFontRules(clonedNode)
     .then((rules) =>
@@ -26,7 +27,7 @@ export async function embedWebFonts(
           const baseUrl = rule.parentStyleSheet
             ? rule.parentStyleSheet.href
             : null
-          return embedResources(rule.cssText, baseUrl, options)
+          return embedResources(rule.cssText, baseUrl, options, fetchOptions)
         }),
       ),
     )

@@ -71,12 +71,12 @@ function getImageSize(domNode: HTMLElement, options: Options = {}) {
 export async function toSvg(
   domNode: HTMLElement,
   options: Options = {},
+  fetchOptions: RequestInit,
 ): Promise<string> {
   const { width, height } = getImageSize(domNode, options)
-
   return cloneNode(domNode, options.filter, true)
-    .then((clonedNode) => embedWebFonts(clonedNode!, options))
-    .then((clonedNode) => embedImages(clonedNode, options))
+    .then((clonedNode) => embedWebFonts(clonedNode!, options, fetchOptions))
+    .then((clonedNode) => embedImages(clonedNode, options, fetchOptions))
     .then((clonedNode) => applyStyleWithOptions(clonedNode, options))
     .then((clonedNode) => createSvgDataURL(clonedNode, width, height))
 }
@@ -86,8 +86,9 @@ export const toSvgDataURL = toSvg
 export async function toCanvas(
   domNode: HTMLElement,
   options: Options = {},
+  fetchOptions: RequestInit,
 ): Promise<HTMLCanvasElement> {
-  return toSvg(domNode, options)
+  return toSvg(domNode, options, fetchOptions)
     .then(createImage)
     .then(delay(100))
     .then((image) => {
@@ -115,9 +116,10 @@ export async function toCanvas(
 export async function toPixelData(
   domNode: HTMLElement,
   options: Options = {},
+  fetchOptions: RequestInit,
 ): Promise<Uint8ClampedArray> {
   const { width, height } = getImageSize(domNode, options)
-  return toCanvas(domNode, options).then((canvas) => {
+  return toCanvas(domNode, options, fetchOptions).then((canvas) => {
     const ctx = canvas.getContext('2d')!
     return ctx.getImageData(0, 0, width, height).data
   })
@@ -126,15 +128,19 @@ export async function toPixelData(
 export async function toPng(
   domNode: HTMLElement,
   options: Options = {},
+  fetchOptions: RequestInit,
 ): Promise<string> {
-  return toCanvas(domNode, options).then((canvas) => canvas.toDataURL())
+  return toCanvas(domNode, options, fetchOptions).then((canvas) =>
+    canvas.toDataURL(),
+  )
 }
 
 export async function toJpeg(
   domNode: HTMLElement,
   options: Options = {},
+  fetchOptions: RequestInit,
 ): Promise<string> {
-  return toCanvas(domNode, options).then((canvas) =>
+  return toCanvas(domNode, options, fetchOptions).then((canvas) =>
     canvas.toDataURL('image/jpeg', options.quality || 1),
   )
 }
@@ -142,6 +148,7 @@ export async function toJpeg(
 export async function toBlob(
   domNode: HTMLElement,
   options: Options = {},
+  fetchOptions: RequestInit,
 ): Promise<Blob | null> {
-  return toCanvas(domNode, options).then(canvasToBlob)
+  return toCanvas(domNode, options, fetchOptions).then(canvasToBlob)
 }

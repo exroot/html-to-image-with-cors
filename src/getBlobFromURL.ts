@@ -17,6 +17,7 @@ const cache: {
 export function getBlobFromURL(
   url: string,
   options: Options,
+  fetchOptions: RequestInit,
 ): Promise<string | null> {
   const root = url.split('?')[0]
   const found = cache.find((item) => item.url === root)
@@ -54,7 +55,7 @@ export function getBlobFromURL(
 
   const deferred = window.fetch
     ? window
-        .fetch(url)
+        .fetch(url, fetchOptions)
         .then((response) => response.blob())
         .then(
           (blob) =>
